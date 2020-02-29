@@ -41,6 +41,14 @@ ipcMain.on('get-webcontents-id', e => {
   e.returnValue = e.sender.id;
 });
 
+ipcMain.handle('get-webcontents-type', e => {
+  return e.sender.getType();
+});
+
+ipcMain.on('get-webcontents-type-sync', e => {
+  e.returnValue = e.sender.getType();
+});
+
 export interface IOptions {
   preloadPath?: string;
   blacklist?: string[];

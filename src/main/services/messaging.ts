@@ -341,6 +341,22 @@ export const runMessagingService = (ses: ExtensibleSession) => {
     return cookie;
   });
 
+  ipcMain.handle(
+    `api-runtime-getBackgroundPage-${ses.id}`,
+    async (e, extensionId) => {
+      return new Promise(resolve => {
+        const { backgroundPage } = ses.extensions[extensionId];
+        const id = makeId(32);
+
+        backgroundPage.webContents.send('get-window-object', id);
+
+        ipcMain.once(`get-window-object-${id}`, (e, window) => {
+          resolve(window);
+        });
+      });
+    },
+  );
+
   ses.session.cookies.on(
     'changed',
     (e: any, cookie: Electron.Cookie, cause: string) => {

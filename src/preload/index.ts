@@ -7,6 +7,8 @@ import { PROTOCOL } from '../constants';
 import { getAPI } from '../api';
 import { matchesPattern } from '../utils/url';
 
+const prune = require('json-prune');
+
 declare const global: any;
 
 const { protocol, hostname } = parse(window.location.href);
@@ -30,6 +32,13 @@ if (protocol === `${PROTOCOL}:`) {
 
     const w: any = await webFrame.executeJavaScript('window');
     w.chrome = api;
+  });
+
+  ipcRenderer.on('get-window-object', async (e, id) => {
+    const w: any = await webFrame.executeJavaScript('window');
+    const win = prune(w);
+
+    ipcRenderer.send(`get-window-object-${id}`, win);
   });
 } else {
   global.isTab = true;

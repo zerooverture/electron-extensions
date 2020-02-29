@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, webFrame } from 'electron';
 import { Port } from '../models/port';
 import { IpcExtension } from '../models/ipc-extension';
 import { IpcEvent } from '../models/ipc-event';
@@ -12,8 +12,24 @@ import { getWebNavigation } from './web-navigation';
 import { cookies } from './cookies';
 
 export const getAPI = (extension: IpcExtension, sessionId: number) => {
+  const runtime = getRuntime(extension, sessionId);
+
+  const getBackgroundPage = () => {
+    let w: any = null;
+    (async () => {
+      w = JSON.parse(
+        await ipcRenderer.invoke(
+          `api-runtime-getBackgroundPage-${sessionId}`,
+          extension.id,
+        ),
+      );
+    })();
+
+    return w;
+  };
+
   const api = {
-    runtime: getRuntime(extension, sessionId),
+    runtime,
     storage: getStorage(extension.id, sessionId),
     tabs: getTabs(extension, sessionId),
     i18n: getI18n(extension),
@@ -36,10 +52,11 @@ export const getAPI = (extension: IpcExtension, sessionId: number) => {
 
     extension: {
       isIncognitoContext: false,
-      getURL: getRuntime(extension, sessionId).getURL,
+      getURL: runtime.getURL,
       isAllowedIncognitoAccess: (cb: any) => {
         if (cb) cb(false);
       },
+      getBackgroundPage,
     },
 
     contextMenus: {

@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, webFrame } from 'electron';
 import { format } from 'url';
 
 import { IpcExtension } from '../models/ipc-extension';

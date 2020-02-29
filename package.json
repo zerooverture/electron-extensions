@@ -46,6 +46,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "json-prune": "^1.1.0",
     "mime-types": "^2.1.26",
     "ncp": "^2.0.0",
     "prettier": "1.19.1",
