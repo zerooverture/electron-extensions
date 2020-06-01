@@ -61,7 +61,12 @@ export class StorageArea extends EventEmitter {
       if (query === null || query === undefined) {
         const result: any = {};
 
-        const data = JSON.parse(await promises.readFile(this.path, 'utf8'));
+        let buf = await promises.readFile(this.path);
+        if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+          buf = buf.slice(3);
+        }
+
+        const data = JSON.parse(buf.toString('utf8'));
 
         for (const key in data) {
           result[key] = data[key];
@@ -71,7 +76,12 @@ export class StorageArea extends EventEmitter {
       } else if (Array.isArray(query)) {
         const result: any = {};
 
-        const data = JSON.parse(await promises.readFile(this.path, 'utf8'));
+        let buf = await promises.readFile(this.path);
+        if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+          buf = buf.slice(3);
+        }
+
+        const data = JSON.parse(buf.toString('utf8'));
 
         for (const key in data) {
           for (const key1 of query) {
@@ -85,7 +95,12 @@ export class StorageArea extends EventEmitter {
       } else if (typeof query === 'object') {
         const result: any = { ...query };
 
-        const data = JSON.parse(await promises.readFile(this.path, 'utf8'));
+        let buf = await promises.readFile(this.path);
+        if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+          buf = buf.slice(3);
+        }
+
+        const data = JSON.parse(buf.toString('utf8'));
 
         for (const key in data) {
           for (const key1 in query) {
@@ -97,7 +112,12 @@ export class StorageArea extends EventEmitter {
 
         return result;
       } else if (typeof query === 'string') {
-        const data = JSON.parse(await promises.readFile(this.path, 'utf8'));
+        let buf = await promises.readFile(this.path);
+        if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+          buf = buf.slice(3);
+        }
+
+        const data = JSON.parse(buf.toString('utf8'));
 
         for (const key in data) {
           if (key === query) {

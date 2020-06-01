@@ -125,8 +125,11 @@ const loadI18n = async (manifest: chrome.runtime.Manifest) => {
 
     if (!existsSync(messagesPath) || stats.isDirectory()) return;
 
-    const data = await promises.readFile(messagesPath, 'utf8');
-    const locale = JSON.parse(data);
+    let buf = await promises.readFile(messagesPath);
+    if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+      buf = buf.slice(3);
+    }
+    const locale = JSON.parse(buf.toString('utf8'));
 
     return locale;
   }

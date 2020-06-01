@@ -134,7 +134,7 @@ export class ExtensibleSession extends EventEmitter {
     this._initialized = true;
   }
 
-  async loadExtension(dir: string) {
+  async loadExtension(dir: string, generateAppId?: Function) {
     if (!this._initialized) throw new Error('App is not ready');
 
     if (!this._configured) {
@@ -158,11 +158,19 @@ export class ExtensibleSession extends EventEmitter {
       throw new Error("Given directory doesn't contain manifest.json file");
     }
 
-    const manifest: chrome.runtime.Manifest = JSON.parse(
-      await promises.readFile(manifestPath, 'utf8'),
-    );
+    let buf = await promises.readFile(manifestPath);
+    if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
+      buf = buf.slice(3);
+    }
+    const manifest: chrome.runtime.Manifest = JSON.parse(buf.toString('utf8'));
 
-    const id = basename(dir);
+    const id = generateAppId
+      ? manifest.key
+        ? generateAppId(
+            `-----BEGIN PUBLIC KEY-----\n${manifest.key}\n-----END PUBLIC KEY-----`,
+          )
+        : generateAppId(dir)
+      : basename(dir);
 
     if (this.extensions[id]) {
       return this.extensions[id];
@@ -205,14 +213,6 @@ export class ExtensibleSession extends EventEmitter {
       (e, extensionId: string, tabId: number) => {
         const tab = webContentsToTab(webContents.fromId(tabId), this);
         const { backgroundPage, popupPage } = this.extensions[extensionId];
-
-        /*
-        TODO(sentialx):
-        getAllWebContentsInSession(this.session).forEach(x => {
-          if (x.id !== e.sender.id) {
-            x.send('api-emit-event-browserAction-onClicked', tab, extensionId);
-          }
-        });*/
 
         if (backgroundPage && !popupPage) {
           backgroundPage.webContents.send(
